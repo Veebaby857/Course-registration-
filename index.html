@@ -1,1 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+	<title>Course registration Form</title>
+<style>
+  body {
+	font-family: Arial;
+	background-color: #f0f8ff;
+  }
 
+  h1 {
+	text-align: center;
+  }
+
+  form {
+	width: 300px;
+	margin: 20px auto;
+	padding: 15px;
+	background: white;
+	border-radius: 10px;
+  }
+
+  input, select {
+	width: 100%;
+	margin-bottom: 10px;
+  }
+
+  table {
+	width: 80%;
+	margin: 20px auto;
+	border-collapse: collapse;
+  }
+
+  th, td {
+	border: 1px solid black;
+	padding: 8px;
+	text-align: center;
+  }
+
+  th {
+	background-color: lightblue;
+  }
+</style>
+  </head>
+  <body>
+	<a href="#form">Register Now</a>
+	 <header>
+	  <h1>Computer Science Department - Course Registration</h1>
+	  <p>
+		Welcome to the Computer Science Department. Select your preferred course and skill level below to complete your registration for this semester.
+	  </p>
+	</header>
+	<main>
+	   <form id="form">
+		<fieldset>
+		  <legend>All under Computer Science</legend>
+		  <label for="full-name">Name (required):</label>
+		  <input type="text" id="full-name" name="name" placeholder="e.g., John Doe" required size="20">
+
+		  <label for="email">Email address (required):</label>
+		  <input
+			placeholder="example@email.com"
+			required
+			id="email"
+			type="email"
+			name="email"
+			size="20"
+		  />
+
+		</fieldset>
+
+		<fieldset>
+		  <legend>Course Selection - these are CS department courses</legend>
+	 <br />
+		 <label for="web">Web Development</label>
+		  <input id="web" type="radio" name="course" value="web" />
+		
+		 <label for="data">Data science</label>
+		  <input id="data" type="radio" name="course" value="data" />
+		 <label for="design">UI/UX Design</label>
+		 <input id="design" type="radio" name="course" value="design" />
+
+		</fieldset>
+
+		<fieldset>
+		  <legend>Technical Skills - tools taught in CS
+		  </legend>
+		  
+		 <label for="html6">HTML6</label>
+		  <input type="checkbox" id="html6" name="choice" value="html6" />
+		 
+		 <label for="css3">CSS3</label>
+		  <input
+			type="checkbox"
+			id="css3"
+			name="choice"
+			value="css3"
+		  />
+		
+		 <label for="javascript">Java script</label>
+		  <input type="checkbox" id="javascript" name="choice" value="javascript" />
+
+		</fieldset>
+
+		<fieldset>
+		  <legend>Experience Level</legend>
+
+		  <label for="level">Current Experience Level</label>
+
+		  <select name="level" id="level">
+			<option value="beginner">Beginner</option>
+			<option selected value="intermediate">Intermediate</option>
+			<option value="advanced">Advanced</option>
+		  </select>
+
+	
+		</fieldset>
+ 
+	   <table>
+		<caption>Computer Science - Registered Students</caption>
+	   <thead>
+		 <tr>
+		  <th>Name</th>
+		  <th>Course</th>
+		  <th>Skill</th>
+		  <th>Experience</th>
+		 </tr>
+	   </thead>
+	   <tbody>
+	   <tr>
+		<td>Ada Johnson</td>
+		<td>Web Development</td>
+		<td>HTML6, CSS3</td>
+		<td>Beginner</td>
+	   </tr>
+	   <tr>
+		<td>Chinedu Okoro</td>
+		<td>Data Science</td>
+		<td>JavaScript</td>
+		<td>Intermediate</td>
+	   </tr>
+	   </tbody>
+	   
+	   <tfoot>
+		<tr>
+		 <td colspan="4">Total registered:2</td>
+		</tr>
+	   </tfoot>
+	   
+	   </table>
+		<label for="comments">Other Comments?</label>
+		<textarea cols="30" rows="10" name="comments" id="comments"></textarea>
+		<button type="submit">Submit</button>
+		</form>
+	</main>
+  </body>
+</html>
