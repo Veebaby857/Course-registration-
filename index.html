@@ -46,115 +46,110 @@
 </style>
   </head>
   <body>
-	<a href="#form">Register Now</a>
+	<a href="#form">Create Account</a>
 	 <header>
-	  <h1>Computer Science Department - Course Registration</h1>
-	  <p>
-		Welcome to the Computer Science Department. Select your preferred course and skill level below to complete your registration for this semester.
-	  </p>
+	  <h1>Create Account</h1>
+	  <p>Fill in your details to get started</p>
 	</header>
 	<main>
 	   <form id="form">
-		<fieldset>
-		  <legend>All under Computer Science</legend>
-		  <label for="full-name">Name (required):</label>
-		  <input type="text" id="full-name" name="name" placeholder="e.g., John Doe" required size="20">
+		  <label for="username">Username</label>
+		  <input type="text" id="username" name="name" required size="20">
+		     <label for="full-name">Full Name</label>
+		  <input type="text" id="full-name" name="name" required size="20">
 
-		  <label for="email">Email address (required):</label>
-		  <input
-			placeholder="example@email.com"
-			required
+		  <label for="email">Email Address</label>
+		  <input 
+			  required
 			id="email"
 			type="email"
 			name="email"
 			size="20"
 		  />
-
-		</fieldset>
-
-		<fieldset>
-		  <legend>Course Selection - these are CS department courses</legend>
-	 <br />
-		 <label for="web">Web Development</label>
-		  <input id="web" type="radio" name="course" value="web" />
-		
-		 <label for="data">Data science</label>
-		  <input id="data" type="radio" name="course" value="data" />
-		 <label for="design">UI/UX Design</label>
-		 <input id="design" type="radio" name="course" value="design" />
-
-		</fieldset>
-
-		<fieldset>
-		  <legend>Technical Skills - tools taught in CS
-		  </legend>
-		  
-		 <label for="html6">HTML6</label>
-		  <input type="checkbox" id="html6" name="choice" value="html6" />
-		 
-		 <label for="css3">CSS3</label>
-		  <input
-			type="checkbox"
-			id="css3"
-			name="choice"
-			value="css3"
+		   
+		 <label for="phone-number">Phone Number</label>
+<input type= "number" id="number" name="phone-number" required size="20">
+<label for="password">Password</label›
+<input type="text" id="password" name="password" required size="20"> 
+	<label for="confirm-password">Confirm Password</label›
+<input type="text" id="confirm-password" name="password" required size="20">
+		<label for="country">Country</label›
+			  <input 
+				  placeholder="select your country"
+			  required
+			id="email"
+			type="email"
+			name="email"
+			size="20"
 		  />
-		
-		 <label for="javascript">Java script</label>
-		  <input type="checkbox" id="javascript" name="choice" value="javascript" />
+		<select name="country" id="country">
+<option value="united-states">United States</
+option>
+<option value="united-kingdom">United Kingdom</
+option>
+<option value="canada">Canada</
+option>
+<option value="australia">Australia</
+option>
+<option value="germany">Germany</
+option>
+<option value="france">France</
+option>
+<option value="japan">Japan</
+option>
+<option value="china">China</
+option>
+<option value="india">India</
+option>
+<option value="brazil">Brazil</
+option>
+<option value="mexico">Mexico</
+option>
+<option value="spain">Spain</
+option>
+<option value="italy">Italy</
+option>
+<option value="netherlands">Netherlands</
+option>
+<option value="sweden">Sweden</
+option>
+<option value="norway">Norway</
+option>
+<option value="denmark">Denmark</
+option>
+<option value="finland">Finland</
+option>
+<option value="switzerland">Switzerland</
+option>
+<option value="singapore">Singapore</
+option>
+<option value="hong-kong">Hong Kong</
+option>
+<option value="united-arab-emirates">United Arab Emirates</
+option>
+<option value="saudi-arabia">Saudi Arabia</
+option>
+<option value="south-africa">South Africa</
+option>
+<option value="nigeria">Nigeria</
+option>
+<option value="kenya">Kenya</
+option>
+<option value="egypt">Egypt</
+option>
+<option value="south-korea">South Korea</
+option>
+<option value="new-zealand">New Zealand</
+option>
+<option value="other">Other</
+option>
+</select>
+		  
 
-		</fieldset>
+	</main>
+  </body>
+</html>
 
-		<fieldset>
-		  <legend>Experience Level</legend>
-
-		  <label for="level">Current Experience Level</label>
-
-		  <select name="level" id="level">
-			<option value="beginner">Beginner</option>
-			<option selected value="intermediate">Intermediate</option>
-			<option value="advanced">Advanced</option>
-		  </select>
-
-	
-		</fieldset>
- 
-	   <table>
-		<caption>Computer Science - Registered Students</caption>
-	   <thead>
-		 <tr>
-		  <th>Name</th>
-		  <th>Course</th>
-		  <th>Skill</th>
-		  <th>Experience</th>
-		 </tr>
-	   </thead>
-	   <tbody>
-	   <tr>
-		<td>Ada Johnson</td>
-		<td>Web Development</td>
-		<td>HTML6, CSS3</td>
-		<td>Beginner</td>
-	   </tr>
-	   <tr>
-		<td>Chinedu Okoro</td>
-		<td>Data Science</td>
-		<td>JavaScript</td>
-		<td>Intermediate</td>
-	   </tr>
-	   </tbody>
-	   
-	   <tfoot>
-		<tr>
-		 <td colspan="4">Total registered:2</td>
-		</tr>
-	   </tfoot>
-	   
-	   </table>
-		<label for="comments">Other Comments?</label>
-		<textarea cols="30" rows="10" name="comments" id="comments"></textarea>
-		<button type="submit">Submit</button>
-		</form>
 	</main>
   </body>
 </html>
