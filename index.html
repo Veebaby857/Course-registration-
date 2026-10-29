@@ -175,6 +175,41 @@ input.invalid, select.invalid { border-color: var(--red); }
 #support-bubble .dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,.6); animation: bubblePulse 2s infinite; }
 @keyframes bubblePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,.55);} 50% { box-shadow: 0 0 0 6px rgba(34,197,94,0);} }
 @media (max-width: 480px) { #support-bubble span.lbl { display: none; } #support-bubble { padding: 16px; } }
+
+/* ===== Dropdowns with flags (language + country) ===== */
+.flag { width: 20px; height: 15px; object-fit: cover; border-radius: 2px; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(255,255,255,0.15); }
+.dd { position: relative; }
+.dd-btn { width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--field); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font: 400 15px 'Inter', sans-serif; cursor: pointer; text-align: left; }
+.dd-btn .dd-cur { flex: 1; display: flex; align-items: center; gap: 10px; overflow: hidden; white-space: nowrap; }
+.dd-btn .ph { color: #566078; }
+.dd-btn:focus-visible, .dd.open .dd-btn { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(31,107,255,0.2); outline: none; }
+.dd.invalid .dd-btn { border-color: var(--red); }
+.dd-panel { position: absolute; left: 0; right: 0; top: calc(100% + 6px); background: #0c1120; border: 1px solid #26314a; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); z-index: 60; overflow: hidden; }
+.dd.up .dd-panel { top: auto; bottom: calc(100% + 6px); }
+.dd-panel[hidden] { display: none; }
+.dd-search { border: none !important; border-bottom: 1px solid var(--border) !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+.dd-list { list-style: none; max-height: 260px; overflow-y: auto; padding: 4px; }
+.dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; color: #d7deee; }
+.dd-item:hover, .dd-item.sel { background: rgba(31,107,255,0.18); }
+.dd-item .sub { margin-left: auto; color: var(--muted); font-size: 12px; }
+.dd-empty { padding: 14px; color: var(--muted); font-size: 13px; }
+.phone-row { display: flex; gap: 10px; }
+.phone-row input { flex: 1; min-width: 0; }
+.dial { min-width: 92px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 12px; background: var(--field); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; white-space: nowrap; }
+.lang-bar { display: flex; justify-content: center; margin-top: 18px; }
+.lang-bar .dd { width: 230px; }
+.lang-bar .dd-panel { min-width: 270px; left: 50%; right: auto; transform: translateX(-50%); }
+
+/* hide Google Translate's own bar */
+iframe.skiptranslate, .goog-te-banner-frame { display: none !important; }
+body { top: 0 !important; }
+.goog-tooltip, #goog-gt-tt { display: none !important; }
+.goog-text-highlight { background: none !important; box-shadow: none !important; }
+#google_translate_element { position: absolute; left: -9999px; top: 0; height: 0; overflow: hidden; }
+
+.flag-emoji { font-size: 17px; line-height: 1; width: 20px; text-align: center; flex-shrink: 0; font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; }
+#lang-toast { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 2147483001; max-width: 90%; background: #0c1120; color: #f2f5fb; border: 1px solid #26314a; border-radius: 12px; padding: 12px 16px; font: 500 13px/1.5 'Inter', sans-serif; text-align: center; box-shadow: 0 14px 40px rgba(0,0,0,.6); display: none; }
+#lang-toast.show { display: block; }
 </style>
 </head>
 <body>
@@ -234,6 +269,23 @@ input.invalid, select.invalid { border-color: var(--red); }
             <label for="email">Email Address</label>
             <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required>
             <div class="err" id="err-email">Enter a valid email address.</div>
+          </div>
+
+          <div class="form-group">
+            <label>Country of Residence</label>
+            <div id="country-dd"></div>
+            <input type="hidden" id="country" name="country">
+            <div class="err" id="err-country">Select your country.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <div class="phone-row">
+              <div class="dial notranslate" id="dial" translate="no">+</div>
+              <input type="tel" id="phone" placeholder="Phone number" autocomplete="tel-national" inputmode="tel">
+            </div>
+            <div class="hint">The country code fills in when you pick your country.</div>
+            <div class="err" id="err-phone">Enter a valid phone number.</div>
           </div>
 
           <div class="form-group">
@@ -299,6 +351,10 @@ input.invalid, select.invalid { border-color: var(--red); }
       </div>
 
       <p class="risk">Trading leveraged products carries a high level of risk and may not be suitable for everyone.</p>
+
+      <!-- Language selector (bottom of page) -->
+      <div class="lang-bar notranslate" translate="no"><div id="lang-dd" style="width:230px"></div></div>
+
     </div>
   </main>
 
@@ -321,12 +377,15 @@ input.invalid, select.invalid { border-color: var(--red); }
         ['confirm', v('confirm') === v('password') && v('confirm').length > 0],
         ['question', v('question') !== ''],
         ['answer', v('answer').trim().length >= 3],
+        ['country', v('country') !== ''],
+        ['phone', v('phone').replace(/\D/g, '').length >= 6],
         ['terms', document.getElementById('terms').checked]
       ];
       var ok = true;
       checks.forEach(function (c) {
         var input = document.getElementById(c[0]);
-        if (c[0] !== 'terms') input.classList.toggle('invalid', !c[1]);
+        if (c[0] === 'country') document.getElementById('country-dd').classList.toggle('invalid', !c[1]);
+        else if (c[0] !== 'terms') input.classList.toggle('invalid', !c[1]);
         document.getElementById('err-' + c[0]).classList.toggle('show', !c[1]);
         if (!c[1]) ok = false;
       });
@@ -371,5 +430,140 @@ input.invalid, select.invalid { border-color: var(--red); }
     }
   </script>
   <!--End of Tawk.to Script-->
+
+  <!-- Language + dropdown logic -->
+  <div id="google_translate_element"></div>
+  <script>
+    function flagEmoji(iso) {
+      return String.fromCodePoint.apply(null, iso.toUpperCase().split('').map(function (c) { return 127397 + c.charCodeAt(0); }));
+    }
+    /* If the flag picture cannot load, show the flag emoji instead */
+    function flagFallback(img) {
+      var s = document.createElement('span');
+      s.className = 'flag-emoji';
+      s.textContent = flagEmoji(img.getAttribute('data-iso'));
+      img.replaceWith(s);
+    }
+    function flagImg(iso) {
+      iso = iso.toLowerCase();
+      return '<img class="flag" data-iso="' + iso + '" src="https://flagcdn.com/w40/' + iso + '.png" srcset="https://flagcdn.com/w80/' + iso + '.png 2x" width="20" height="15" alt="" onerror="flagFallback(this)">';
+    }
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+    /* Reusable searchable dropdown with flags */
+    function Dropdown(root, items, cfg) {
+      cfg = cfg || {};
+      root.classList.add('dd');
+      if (cfg.up) root.classList.add('up');
+      root.innerHTML =
+        '<button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false"><span class="dd-cur"></span>' +
+        '<svg width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="#8d97ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l5 5 5-5"/></svg></button>' +
+        '<div class="dd-panel" hidden><input class="dd-search" type="text" placeholder="Search..." aria-label="Search" autocomplete="off"><ul class="dd-list" role="listbox"></ul></div>';
+      var btn = root.querySelector('.dd-btn'), cur = root.querySelector('.dd-cur'),
+          panel = root.querySelector('.dd-panel'), search = root.querySelector('.dd-search'), list = root.querySelector('.dd-list');
+      var selected = null;
+      cur.innerHTML = '<span class="ph">' + (cfg.placeholder || '') + '</span>';
+
+      function render(q) {
+        q = (q || '').toLowerCase().trim().replace('+', '');
+        var out = items.filter(function (it) {
+          return !q || it.label.toLowerCase().indexOf(q) > -1 || (it.sub || '').replace('+', '').indexOf(q) > -1;
+        });
+        list.innerHTML = out.length ? out.map(function (it) {
+          return '<li class="dd-item' + (selected && selected.v === it.v ? ' sel' : '') + '" role="option" data-v="' + it.v + '">' +
+            flagImg(it.iso) + '<span>' + esc(it.label) + '</span>' + (it.sub ? '<span class="sub">' + it.sub + '</span>' : '') + '</li>';
+        }).join('') : '<li class="dd-empty">No results</li>';
+      }
+      function open() {
+        panel.hidden = false; root.classList.add('open'); btn.setAttribute('aria-expanded', 'true');
+        search.value = ''; render('');
+        var s = list.querySelector('.sel'); if (s) s.scrollIntoView({ block: 'center' });
+        search.focus({ preventScroll: true });
+      }
+      function close() { panel.hidden = true; root.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+      function set(v, silent) {
+        var it = items.filter(function (i) { return i.v === v; })[0];
+        if (!it) return;
+        selected = it;
+        cur.innerHTML = flagImg(it.iso) + '<span>' + esc(it.label) + '</span>';
+        if (!silent && cfg.onSelect) cfg.onSelect(it);
+      }
+      btn.addEventListener('click', function () { panel.hidden ? open() : close(); });
+      search.addEventListener('input', function () { render(search.value); });
+      list.addEventListener('click', function (e) {
+        var li = e.target.closest('.dd-item'); if (!li) return;
+        set(li.getAttribute('data-v')); close();
+      });
+      root.addEventListener('keydown', function (e) { if (e.key === 'Escape') { close(); btn.focus(); } });
+      document.addEventListener('click', function (e) { if (!root.contains(e.target)) close(); });
+      return { set: set };
+    }
+
+
+    /* Tell the person when the translation service cannot load */
+    var transBlocked = false;
+    function langToast(msg) {
+      var t = document.getElementById('lang-toast');
+      if (!t) { t = document.createElement('div'); t.id = 'lang-toast'; t.className = 'notranslate'; t.setAttribute('translate', 'no'); document.body.appendChild(t); }
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('show'); }, 7000);
+    }
+    function langBlocked() { transBlocked = true; }
+    var BLOCK_MSG = "Translation can't load in this view. It needs internet access to Google Translate and works once the page is on your website.";
+
+    /* Languages: code | flag country | name  (code = Google Translate language code) */
+    var LANG_DATA = "en|gb|English;fr|fr|Français;es|es|Español;pt|pt|Português;ar|sa|العربية;ig|ng|Igbo;ha|ng|Hausa;yo|ng|Yorùbá;sw|ke|Kiswahili;zu|za|isiZulu;xh|za|isiXhosa;af|za|Afrikaans;am|et|አማርኛ;so|so|Soomaali;rw|rw|Kinyarwanda;sn|zw|chiShona;mg|mg|Malagasy;zh-CN|cn|中文 (简体);zh-TW|tw|中文 (繁體);hi|in|हिन्दी;bn|bd|বাংলা;ur|pk|اردو;ta|in|தமிழ்;te|in|తెలుగు;mr|in|मराठी;gu|in|ગુજરાતી;pa|in|ਪੰਜਾਬੀ;ne|np|नेपाली;si|lk|සිංහල;ru|ru|Русский;uk|ua|Українська;de|de|Deutsch;it|it|Italiano;nl|nl|Nederlands;tr|tr|Türkçe;ja|jp|日本語;ko|kr|한국어;vi|vn|Tiếng Việt;th|th|ไทย;id|id|Bahasa Indonesia;ms|my|Bahasa Melayu;tl|ph|Filipino;pl|pl|Polski;ro|ro|Română;el|gr|Ελληνικά;cs|cz|Čeština;sk|sk|Slovenčina;sv|se|Svenska;da|dk|Dansk;no|no|Norsk;fi|fi|Suomi;hu|hu|Magyar;bg|bg|Български;sr|rs|Српски;hr|hr|Hrvatski;sl|si|Slovenščina;bs|ba|Bosanski;mk|mk|Македонски;sq|al|Shqip;lt|lt|Lietuvių;lv|lv|Latviešu;et|ee|Eesti;is|is|Íslenska;ga|ie|Gaeilge;ka|ge|ქართული;hy|am|Հայերեն;az|az|Azərbaycan;kk|kz|Қазақ;uz|uz|Oʻzbek;mn|mn|Монгол;iw|il|עברית;fa|ir|فارسی;my|mm|မြန်မာ;km|kh|ខ្មែរ;lo|la|ລາວ";
+    var LANGS = LANG_DATA.split(';').map(function (r) { var p = r.split('|'); return { v: p[0], iso: p[1], label: p[2] }; });
+
+    function currentLang() {
+      var m = document.cookie.match(/(?:^|; )googtrans=([^;]*)/);
+      var code = m ? decodeURIComponent(m[1]).split('/')[2] : 'en';
+      return LANGS.some(function (l) { return l.v === code; }) ? code : 'en';
+    }
+    function clearTransCookie() {
+      var past = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = past;
+      document.cookie = past + '; domain=' + location.hostname;
+      document.cookie = past + '; domain=.' + location.hostname;
+    }
+    function setLang(code) {
+      if (code === 'en') { var was = currentLang(); clearTransCookie(); if (was !== 'en') location.reload(); return; }
+      document.cookie = 'googtrans=/en/' + code + '; path=/';
+      if (transBlocked) { langToast(BLOCK_MSG); return; }
+      var tries = 0;
+      (function apply() {
+        var sel = document.querySelector('select.goog-te-combo');
+        if (sel) { sel.value = code; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+        else if (tries++ < 28) setTimeout(apply, 250);
+        else langToast(BLOCK_MSG);
+      })();
+    }
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');
+    }
+
+    var langDD = Dropdown(document.getElementById('lang-dd'), LANGS, { up: true, onSelect: function (it) { setLang(it.v); } });
+    langDD.set(currentLang(), true);
+  </script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" onerror="langBlocked()"></script>
+
+  <script>
+    /* ISO code | name | dial code */
+    var COUNTRY_DATA = "AF|Afghanistan|93;AL|Albania|355;DZ|Algeria|213;AD|Andorra|376;AO|Angola|244;AG|Antigua and Barbuda|1268;AR|Argentina|54;AM|Armenia|374;AU|Australia|61;AT|Austria|43;AZ|Azerbaijan|994;BS|Bahamas|1242;BH|Bahrain|973;BD|Bangladesh|880;BB|Barbados|1246;BY|Belarus|375;BE|Belgium|32;BZ|Belize|501;BJ|Benin|229;BT|Bhutan|975;BO|Bolivia|591;BA|Bosnia and Herzegovina|387;BW|Botswana|267;BR|Brazil|55;BN|Brunei|673;BG|Bulgaria|359;BF|Burkina Faso|226;BI|Burundi|257;CV|Cabo Verde|238;KH|Cambodia|855;CM|Cameroon|237;CA|Canada|1;CF|Central African Republic|236;TD|Chad|235;CL|Chile|56;CN|China|86;CO|Colombia|57;KM|Comoros|269;CG|Congo|242;CD|DR Congo|243;CR|Costa Rica|506;CI|Côte d'Ivoire|225;HR|Croatia|385;CU|Cuba|53;CY|Cyprus|357;CZ|Czechia|420;DK|Denmark|45;DJ|Djibouti|253;DM|Dominica|1767;DO|Dominican Republic|1809;EC|Ecuador|593;EG|Egypt|20;SV|El Salvador|503;GQ|Equatorial Guinea|240;ER|Eritrea|291;EE|Estonia|372;SZ|Eswatini|268;ET|Ethiopia|251;FJ|Fiji|679;FI|Finland|358;FR|France|33;GA|Gabon|241;GM|Gambia|220;GE|Georgia|995;DE|Germany|49;GH|Ghana|233;GR|Greece|30;GD|Grenada|1473;GT|Guatemala|502;GN|Guinea|224;GW|Guinea-Bissau|245;GY|Guyana|592;HT|Haiti|509;HN|Honduras|504;HK|Hong Kong|852;HU|Hungary|36;IS|Iceland|354;IN|India|91;ID|Indonesia|62;IR|Iran|98;IQ|Iraq|964;IE|Ireland|353;IL|Israel|972;IT|Italy|39;JM|Jamaica|1876;JP|Japan|81;JO|Jordan|962;KZ|Kazakhstan|7;KE|Kenya|254;KI|Kiribati|686;XK|Kosovo|383;KW|Kuwait|965;KG|Kyrgyzstan|996;LA|Laos|856;LV|Latvia|371;LB|Lebanon|961;LS|Lesotho|266;LR|Liberia|231;LY|Libya|218;LI|Liechtenstein|423;LT|Lithuania|370;LU|Luxembourg|352;MO|Macao|853;MG|Madagascar|261;MW|Malawi|265;MY|Malaysia|60;MV|Maldives|960;ML|Mali|223;MT|Malta|356;MH|Marshall Islands|692;MR|Mauritania|222;MU|Mauritius|230;MX|Mexico|52;FM|Micronesia|691;MD|Moldova|373;MC|Monaco|377;MN|Mongolia|976;ME|Montenegro|382;MA|Morocco|212;MZ|Mozambique|258;MM|Myanmar|95;NA|Namibia|264;NR|Nauru|674;NP|Nepal|977;NL|Netherlands|31;NZ|New Zealand|64;NI|Nicaragua|505;NE|Niger|227;NG|Nigeria|234;KP|North Korea|850;MK|North Macedonia|389;NO|Norway|47;OM|Oman|968;PK|Pakistan|92;PW|Palau|680;PS|Palestine|970;PA|Panama|507;PG|Papua New Guinea|675;PY|Paraguay|595;PE|Peru|51;PH|Philippines|63;PL|Poland|48;PT|Portugal|351;PR|Puerto Rico|1787;QA|Qatar|974;RO|Romania|40;RU|Russia|7;RW|Rwanda|250;KN|Saint Kitts and Nevis|1869;LC|Saint Lucia|1758;VC|Saint Vincent and the Grenadines|1784;WS|Samoa|685;SM|San Marino|378;ST|São Tomé and Príncipe|239;SA|Saudi Arabia|966;SN|Senegal|221;RS|Serbia|381;SC|Seychelles|248;SL|Sierra Leone|232;SG|Singapore|65;SK|Slovakia|421;SI|Slovenia|386;SB|Solomon Islands|677;SO|Somalia|252;ZA|South Africa|27;KR|South Korea|82;SS|South Sudan|211;ES|Spain|34;LK|Sri Lanka|94;SD|Sudan|249;SR|Suriname|597;SE|Sweden|46;CH|Switzerland|41;SY|Syria|963;TW|Taiwan|886;TJ|Tajikistan|992;TZ|Tanzania|255;TH|Thailand|66;TL|Timor-Leste|670;TG|Togo|228;TO|Tonga|676;TT|Trinidad and Tobago|1868;TN|Tunisia|216;TR|Türkiye|90;TM|Turkmenistan|993;TV|Tuvalu|688;UG|Uganda|256;UA|Ukraine|380;AE|United Arab Emirates|971;GB|United Kingdom|44;US|United States|1;UY|Uruguay|598;UZ|Uzbekistan|998;VU|Vanuatu|678;VA|Vatican City|379;VE|Venezuela|58;VN|Vietnam|84;YE|Yemen|967;ZM|Zambia|260;ZW|Zimbabwe|263";
+    var COUNTRIES = COUNTRY_DATA.split(';').map(function (r) {
+      var p = r.split('|');
+      return { v: p[0], iso: p[0], label: p[1], dial: p[2], sub: '+' + p[2] };
+    });
+    var countryDD = Dropdown(document.getElementById('country-dd'), COUNTRIES, {
+      placeholder: 'Select your country',
+      onSelect: function (it) {
+        document.getElementById('country').value = it.v;
+        document.getElementById('country-dd').classList.remove('invalid');
+        document.getElementById('err-country').classList.remove('show');
+        document.getElementById('dial').innerHTML = flagImg(it.iso) + '<span>+' + it.dial + '</span>';
+      }
+    });
+  </script>
+
 </body>
 </html>
