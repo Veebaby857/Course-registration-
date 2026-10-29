@@ -210,16 +210,37 @@ body { top: 0 !important; }
 .flag-emoji { font-size: 17px; line-height: 1; width: 20px; text-align: center; flex-shrink: 0; font-family: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; }
 #lang-toast { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 2147483001; max-width: 90%; background: #0c1120; color: #f2f5fb; border: 1px solid #26314a; border-radius: 12px; padding: 12px 16px; font: 500 13px/1.5 'Inter', sans-serif; text-align: center; box-shadow: 0 14px 40px rgba(0,0,0,.6); display: none; }
 #lang-toast.show { display: block; }
+
+/* ===== Top bar: logo + language (always visible) ===== */
+#bg-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.brand-side, .form-side { position: relative; z-index: 1; }
+.topbar { position: fixed; top: 0; left: 0; right: 0; height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(16px, 4vw, 40px); z-index: 40; background: rgba(4,6,11,0.72); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.07); }
+.topbar .logo img { height: 38px; width: auto; max-width: 190px; object-fit: contain; filter: drop-shadow(0 2px 12px rgba(31,107,255,0.35)); }
+.lang-top .dd { width: auto; }
+.lang-top .dd-btn { padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.14); font-size: 14px; gap: 8px; }
+.lang-top .dd-cur { max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+.lang-top .dd-panel { left: auto; right: 0; min-width: 280px; max-width: calc(100vw - 24px); transform: none; }
+.brand-side { background: radial-gradient(900px 500px at 20% 0%, rgba(31,107,255,0.14), transparent 60%); border-right: 1px solid rgba(255,255,255,0.06); padding-top: 96px; justify-content: center; }
+.brand-side .chart { display: none; }
+.form-side { padding-top: 96px; }
+.card { background: rgba(12,17,32,0.9); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+@media (min-width: 960px) { .form-side { padding-top: 96px; } .brand-side { padding-top: 96px; } }
 </style>
 </head>
 <body>
 
-  <aside class="brand-side">
+  <!-- Top bar: logo (left) + language selector (right), visible immediately -->
+  <header class="topbar">
     <a class="logo" href="index.html">
+      <!-- Your logo: save it as logo.png in the same folder -->
       <img src="logo.png" alt="Company logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">
       <span class="logo-fallback"><span class="logo-mark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg></span>YOUR BRAND</span>
     </a>
+    <div class="lang-top notranslate" translate="no"><div id="lang-dd"></div></div>
+  </header>
 
+
+  <aside class="brand-side">
     <div class="brand-copy">
       <h2>Open your trading account in minutes.</h2>
       <p>Set up your profile and add a security question so you can always prove the account is yours.</p>
@@ -239,13 +260,6 @@ body { top: 0 !important; }
 
   <main class="form-side">
     <div class="form-wrap">
-
-      <div class="mobile-logo">
-        <a class="logo" href="index.html">
-          <img src="logo.png" alt="Company logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">
-          <span class="logo-fallback"><span class="logo-mark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg></span>YOUR BRAND</span>
-        </a>
-      </div>
 
       <div class="card">
         <h1>Create Account</h1>
@@ -351,9 +365,6 @@ body { top: 0 !important; }
       </div>
 
       <p class="risk">Trading leveraged products carries a high level of risk and may not be suitable for everyone.</p>
-
-      <!-- Language selector (bottom of page) -->
-      <div class="lang-bar notranslate" translate="no"><div id="lang-dd" style="width:230px"></div></div>
 
     </div>
   </main>
@@ -542,7 +553,7 @@ body { top: 0 !important; }
       new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');
     }
 
-    var langDD = Dropdown(document.getElementById('lang-dd'), LANGS, { up: true, onSelect: function (it) { setLang(it.v); } });
+    var langDD = Dropdown(document.getElementById('lang-dd'), LANGS, { onSelect: function (it) { setLang(it.v); } });
     langDD.set(currentLang(), true);
   </script>
   <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" onerror="langBlocked()"></script>
@@ -563,6 +574,141 @@ body { top: 0 !important; }
         document.getElementById('dial').innerHTML = flagImg(it.iso) + '<span>+' + it.dial + '</span>';
       }
     });
+  </script>
+
+
+  <!-- Animated live-trading background -->
+  <script>
+  (function () {
+    var cv = document.createElement('canvas');
+    cv.id = 'bg-canvas';
+    document.body.insertBefore(cv, document.body.firstChild);
+    var ctx = cv.getContext('2d');
+    var W, H, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function resize() {
+      W = window.innerWidth; H = window.innerHeight;
+      cv.width = W * dpr; cv.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', function () { resize(); draw(); });
+
+    var CW = 14, GAP = 5, STEP = CW + GAP, SPEED = 26;      // candle width, gap, scroll speed (px/s)
+    var price = 100, candles = [], AXIS = 78;
+    function makeCandle() {
+      var o = price;
+      var c = o + (Math.random() - 0.485) * 2.2;
+      var h = Math.max(o, c) + Math.random() * 1.1;
+      var l = Math.min(o, c) - Math.random() * 1.1;
+      price = c;
+      return { o: o, h: h, l: l, c: c, v: 0.25 + Math.random() * 0.75 };
+    }
+    for (var i = 0; i < 260; i++) candles.push(makeCandle());
+
+    var off = 0, lo = null, hi = null, last = performance.now();
+
+    function sma(idx, n) {
+      var s = 0, k = 0;
+      for (var j = Math.max(0, idx - n + 1); j <= idx; j++) { s += candles[j].c; k++; }
+      return s / k;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      var g = ctx.createRadialGradient(W * 0.25, 0, 0, W * 0.25, 0, Math.max(W, H) * 0.9);
+      g.addColorStop(0, 'rgba(31,107,255,0.20)');
+      g.addColorStop(1, 'rgba(4,6,11,0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+      var top = H * 0.26, bottom = H * 0.86, n = candles.length;
+      var right = W - AXIS;
+
+      // visible range -> smooth auto-scale
+      var tlo = Infinity, thi = -Infinity;
+      for (var i = 0; i < n; i++) {
+        var x = right - (n - 1 - i) * STEP - off;
+        if (x < -STEP || x > W) continue;
+        if (candles[i].l < tlo) tlo = candles[i].l;
+        if (candles[i].h > thi) thi = candles[i].h;
+      }
+      if (lo === null) { lo = tlo; hi = thi; }
+      lo += (tlo - lo) * 0.04; hi += (thi - hi) * 0.04;
+      var span = Math.max(hi - lo, 1);
+      function Y(p) { return bottom - ((p - lo) / span) * (bottom - top); }
+
+      // grid + price labels
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      for (var r = 0; r <= 6; r++) {
+        var gy = top + (bottom - top) * r / 6;
+        ctx.strokeStyle = 'rgba(148,163,184,0.07)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+        var gp = hi - span * r / 6;
+        ctx.fillStyle = 'rgba(148,163,184,0.35)';
+        ctx.fillText((1 + (gp - 100) / 1000).toFixed(4), W - AXIS + 10, gy - 4);
+      }
+      for (var vx = W - AXIS - (off % 120); vx > 0; vx -= 120) {
+        ctx.strokeStyle = 'rgba(148,163,184,0.05)';
+        ctx.beginPath(); ctx.moveTo(vx, top - 40); ctx.lineTo(vx, H); ctx.stroke();
+      }
+
+      // volume + candles
+      for (var k = 0; k < n; k++) {
+        var cx = right - (n - 1 - k) * STEP - off;
+        if (cx < -STEP || cx > W) continue;
+        var cd = candles[k], up = cd.c >= cd.o;
+        ctx.fillStyle = 'rgba(31,107,255,0.16)';
+        ctx.fillRect(cx, H - 6 - cd.v * H * 0.08, CW, cd.v * H * 0.08);
+        var col = up ? 'rgba(34,197,94,0.55)' : 'rgba(239,68,68,0.5)';
+        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(cx + CW / 2, Y(cd.h)); ctx.lineTo(cx + CW / 2, Y(cd.l)); ctx.stroke();
+        var yo = Y(cd.o), yc = Y(cd.c);
+        ctx.fillRect(cx, Math.min(yo, yc), CW, Math.max(2, Math.abs(yc - yo)));
+      }
+
+      // moving average line
+      ctx.beginPath();
+      var started = false;
+      for (var m = 0; m < n; m++) {
+        var mx = right - (n - 1 - m) * STEP - off + CW / 2;
+        if (mx < -STEP || mx > W) continue;
+        var my = Y(sma(m, 10));
+        if (!started) { ctx.moveTo(mx, my); started = true; } else ctx.lineTo(mx, my);
+      }
+      ctx.strokeStyle = 'rgba(66,133,255,0.95)'; ctx.lineWidth = 2.2;
+      ctx.shadowColor = 'rgba(31,107,255,0.8)'; ctx.shadowBlur = 12;
+      ctx.stroke(); ctx.shadowBlur = 0;
+
+      // live price line + label
+      var lastC = candles[n - 1].c, ly = Y(lastC);
+      var isUp = lastC >= candles[n - 1].o;
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = isUp ? 'rgba(34,197,94,0.6)' : 'rgba(239,68,68,0.6)';
+      ctx.beginPath(); ctx.moveTo(0, ly); ctx.lineTo(W, ly); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = isUp ? '#16a34a' : '#dc2626';
+      ctx.fillRect(W - AXIS + 2, ly - 11, AXIS - 4, 22);
+      ctx.fillStyle = '#fff'; ctx.font = '600 12px Inter, sans-serif';
+      ctx.fillText((1 + (lastC - 100) / 1000).toFixed(4), W - AXIS + 10, ly + 4);
+
+      // pair label
+      ctx.fillStyle = 'rgba(200,210,230,0.55)'; ctx.font = '600 13px Inter, sans-serif';
+      ctx.fillText('EUR/USD  ·  M5', 24, top - 14);
+    }
+
+    function frame(now) {
+      var dt = Math.min((now - last) / 1000, 0.1); last = now;
+      off += SPEED * dt;
+      while (off >= STEP) { off -= STEP; candles.push(makeCandle()); candles.shift(); }
+      draw();
+      requestAnimationFrame(frame);
+    }
+    draw();
+    if (!reduce) requestAnimationFrame(frame);
+  })();
   </script>
 
 </body>
